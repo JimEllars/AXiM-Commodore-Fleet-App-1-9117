@@ -1,10 +1,13 @@
 import React from 'react';
+import useSWR from 'swr';
 import ReactECharts from 'echarts-for-react';
 import { useCommodoreStore } from '../store/useCommodoreStore';
 import SafeIcon from '../common/SafeIcon';
 
+const fetcher = url => fetch(url, { headers: { 'Cache-Control': 'max-age=60, stale-while-revalidate=120' } }).then(res => res.json());
 export default function ProfitabilityHUD() {
   const { activeVehicles, fleetCosts } = useCommodoreStore();
+  const { data: finOpsData } = useSWR('/api/finops/burn-rate', fetcher, { fallbackData: { avgMargin: '24.2%', dailyBurn: '$4,120' } });
   
   const profitData = Object.values(activeVehicles).map(v => {
     const costs = fleetCosts
@@ -61,11 +64,11 @@ export default function ProfitabilityHUD() {
       <div className="p-3 bg-void/50 border-t border-axim-border grid grid-cols-2 gap-2">
         <div className="text-center p-2 border border-axim-border rounded">
           <div className="text-[8px] text-gray-500 uppercase">Fleet Avg Margin</div>
-          <div className="text-sm font-bold text-axim-teal">24.2%</div>
+          <div className="text-sm font-bold text-axim-teal">{finOpsData.avgMargin}</div>
         </div>
         <div className="text-center p-2 border border-axim-border rounded">
           <div className="text-[8px] text-gray-500 uppercase">Daily Burn</div>
-          <div className="text-sm font-bold text-axim-alert">$4,120</div>
+          <div className="text-sm font-bold text-axim-alert">{finOpsData.dailyBurn}</div>
         </div>
       </div>
     </div>
