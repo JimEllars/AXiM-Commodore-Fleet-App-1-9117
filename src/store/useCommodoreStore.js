@@ -228,6 +228,28 @@ export const useCommodoreStore = create((set, get) => ({
     const alerts = await alertService.getAll();
     set({ ecosystemAlerts: alerts });
     await logService.add(type, `[PROACTIVE] ${message}`);
+
+    // Dispatch to AXiM Core central telemetry
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseKey) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const client = createClient(supabaseUrl, supabaseKey);
+        await client.functions.invoke('telemetry-ingress', {
+          body: {
+            device_id: source,
+            event_type: `FLEET_ALERT_${type}`,
+            severity: type === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
+            message,
+            coordinates: { lat, lng },
+            source: 'AXiM_COMMODORE_FLEET_APP'
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('[COMMODORE_TELEMETRY] Core telemetry dispatch failed:', e);
+    }
   },
 
   resolveAlert: async (id) => {

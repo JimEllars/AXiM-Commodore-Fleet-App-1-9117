@@ -1,10 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommodoreStore } from '../store/useCommodoreStore';
 import SafeIcon from '../common/SafeIcon';
 
 export default function OnyxAnalysisModal() {
   const { activeOnyxTrace, setOnyxTrace } = useCommodoreStore();
+  const [query, setQuery] = useState('');
+  const [response, setResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleQuerySubmit = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    setIsLoading(true);
+    setResponse('');
+
+    const currentQuery = query;
+    setQuery('');
+
+    try {
+      const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://api.axim.us.com';
+      const res = await fetch(`${workerUrl}/v1/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AXiM-Gateway-Trace': activeOnyxTrace.id || 'unknown-trace'
+        },
+        body: JSON.stringify({
+          prompt: currentQuery,
+          context: activeOnyxTrace
+        })
+      });
+
+      const data = await res.json();
+      const answerText = data.response || data.answer || data.message || "Onyx AI Analysis complete. No specific text returned.";
+
+      let i = 0;
+      const interval = setInterval(() => {
+        setResponse((prev) => prev + answerText.charAt(i));
+        i++;
+        if (i >= answerText.length) clearInterval(interval);
+      }, 15);
+
+    } catch (error) {
+      console.error('Onyx AI Error:', error);
+      setResponse(`[SYS_ERROR] Failed to communicate with Onyx AI Edge Endpoint. ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!activeOnyxTrace) return null;
 
@@ -15,10 +60,10 @@ export default function OnyxAnalysisModal() {
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="w-full max-w-2xl bg-axim-panel border border-axim-teal/30 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(45,212,191,0.2)]"
+          className="w-full max-w-2xl bg-axim-panel border border-axim-teal/30 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(45,212,191,0.2)] flex flex-col max-h-[90vh]"
         >
           {/* Header */}
-          <div className="p-4 border-b border-axim-border flex items-center justify-between bg-axim-teal/5">
+          <div className="p-4 border-b border-axim-border flex items-center justify-between bg-axim-teal/5 shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-axim-teal/10 rounded-lg">
                 <SafeIcon name="Cpu" className="w-6 h-6 text-axim-teal" />
@@ -29,7 +74,7 @@ export default function OnyxAnalysisModal() {
               </div>
             </div>
             <button 
-              onClick={() => setOnyxTrace(null)}
+              onClick={() => { setOnyxTrace(null); setResponse(''); setQuery(''); }}
               className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white"
             >
               <SafeIcon name="X" className="w-5 h-5" />
@@ -37,7 +82,7 @@ export default function OnyxAnalysisModal() {
           </div>
 
           {/* Analysis Body */}
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-void/50 border border-axim-border rounded-lg">
                 <span className="text-[10px] font-mono text-gray-500 block mb-1 uppercase">Root Cause Analysis</span>
@@ -68,11 +113,42 @@ export default function OnyxAnalysisModal() {
                 <div className="text-axim-warn">! DISPATCH_HANDSHAKE: MANUAL_INTERVENTION_REQUIRED</div>
               </div>
             </div>
+
+            {/* AI Query Section */}
+            <div className="border-t border-axim-border pt-4 mt-4">
+              <span className="text-[10px] font-mono text-gray-500 uppercase block mb-2">Ask Onyx AI</span>
+              <form onSubmit={handleQuerySubmit} className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Ask Onyx about this incident..."
+                  className="flex-1 bg-void border border-axim-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-axim-teal transition-colors"
+                  disabled={isLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || !query.trim()}
+                  className="bg-axim-teal text-void px-4 py-2 rounded text-sm font-bold disabled:opacity-50 hover:bg-white transition-colors"
+                >
+                  {isLoading ? 'Querying...' : 'Ask'}
+                </button>
+              </form>
+
+              {/* Typewriter Response Container */}
+              {(response || isLoading) && (
+                <div className="bg-void/80 border border-axim-teal/30 rounded p-4 font-mono text-xs text-axim-teal min-h-[60px] whitespace-pre-wrap">
+                  {response}
+                  {isLoading && !response && <span className="animate-pulse">Analyzing trace data...</span>}
+                  <span className="animate-pulse ml-1 inline-block w-1 h-3 bg-axim-teal"></span>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="p-4 bg-void/80 border-t border-axim-border flex justify-end gap-3">
+          <div className="p-4 bg-void/80 border-t border-axim-border flex justify-end gap-3 shrink-0">
             <button 
-              onClick={() => setOnyxTrace(null)}
+              onClick={() => { setOnyxTrace(null); setResponse(''); setQuery(''); }}
               className="px-4 py-2 text-xs font-mono text-gray-400 hover:text-white"
             >
               DISMISS

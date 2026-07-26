@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCommodoreStore } from '../store/useCommodoreStore';
 import SafeIcon from '../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,37 @@ export default function MapPanel() {
   };
 
   const transform = getTrackingTransform();
+
+  useEffect(() => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return;
+
+    let client;
+    import('@supabase/supabase-js').then(({ createClient }) => {
+      client = createClient(supabaseUrl, supabaseKey);
+      const channel = client.channel('fleet-map-realtime')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'hardware_registry' }, (payload) => {
+          if (payload.new && payload.new.id) {
+            useCommodoreStore.setState(state => {
+              const current = state.activeVehicles[payload.new.id];
+              if (current) {
+                return {
+                  activeVehicles: {
+                    ...state.activeVehicles,
+                    [payload.new.id]: { ...current, lat: payload.new.lat || current.lat, lng: payload.new.lng || current.lng }
+                  }
+                };
+              }
+              return state;
+            });
+          }
+        })
+        .subscribe();
+
+      return () => { client && client.removeChannel(channel); };
+    });
+  }, []);
 
   return (
     <div className="h-full flex flex-col bg-axim-panel border border-axim-border rounded-lg overflow-hidden relative">
