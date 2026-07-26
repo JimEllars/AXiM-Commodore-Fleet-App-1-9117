@@ -129,6 +129,7 @@ export const useCommodoreStore = create((set, get) => ({
   },
 
   simulateVitals: async () => {
+    if (import.meta.env.VITE_USE_SIMULATION !== 'true') return;
     const { activeVehicles, geofences, ecosystemAlerts, operatorVitals, drivers, diagnostics } = get();
     const updatedVehicles = { ...activeVehicles };
     const updatedVitals = { ...operatorVitals };
@@ -290,6 +291,10 @@ export const useCommodoreStore = create((set, get) => ({
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setIsTracking: (isTracking) => set({ isTracking }),
+  updateOperatorVitals: (driverId, vitals) => set((state) => ({ operatorVitals: { ...state.operatorVitals, [driverId]: { ...state.operatorVitals[driverId], ...vitals } } })),
+  updateDiagnostic: (diagnostic) => set((state) => ({
+    diagnostics: state.diagnostics.map(d => d.id === diagnostic.id ? { ...d, ...diagnostic } : d)
+  })),
   setOnyxTrace: (trace) => set({ activeOnyxTrace: trace }),
   sendDirective: async (vehicleId, message) => {
     await directiveService.send(vehicleId, message);

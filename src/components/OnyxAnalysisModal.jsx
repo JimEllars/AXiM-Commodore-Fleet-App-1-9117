@@ -8,48 +8,9 @@ export default function OnyxAnalysisModal() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleQuerySubmit = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    setIsLoading(true);
-    setResponse('');
-
-    const currentQuery = query;
-    setQuery('');
-
-    try {
-      const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://api.axim.us.com';
-      const res = await fetch(`${workerUrl}/v1/ai/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-AXiM-Gateway-Trace': activeOnyxTrace.id || 'unknown-trace'
-        },
-        body: JSON.stringify({
-          prompt: currentQuery,
-          context: activeOnyxTrace
-        })
-      });
-
-      const data = await res.json();
-      const answerText = data.response || data.answer || data.message || "Onyx AI Analysis complete. No specific text returned.";
-
-      let i = 0;
-      const interval = setInterval(() => {
-        setResponse((prev) => prev + answerText.charAt(i));
-        i++;
-        if (i >= answerText.length) clearInterval(interval);
-      }, 15);
-
-    } catch (error) {
-      console.error('Onyx AI Error:', error);
-      setResponse(`[SYS_ERROR] Failed to communicate with Onyx AI Edge Endpoint. ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const handleQuerySubmit = async (e) => { e.preventDefault(); if (!query.trim()) return; setIsLoading(true); setResponse(''); setError(null); const currentQuery = query; setQuery(''); try { const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://api.axim.us.com'; const res = await fetch(`${workerUrl}/v1/ai/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AXiM-Gateway-Trace': activeOnyxTrace.id || 'unknown-trace' }, body: JSON.stringify({ prompt: currentQuery, context: activeOnyxTrace }) }); if (!res.ok) throw new Error(`HTTP ${res.status}`); const data = await res.json(); const answerText = data.response || data.answer || data.message || "Onyx AI Analysis complete. No specific text returned."; let i = 0; const interval = setInterval(() => { setResponse(prev => answerText.slice(0, i + 1)); i++; if (i >= answerText.length) clearInterval(interval); }, 15); } catch (err) { console.error('Onyx AI Error:', err); setError(`[SYS_ERROR] Failed to communicate with Onyx AI Edge Endpoint. ${err.message}`); } finally { setIsLoading(false); } };
 
   if (!activeOnyxTrace) return null;
 
@@ -136,11 +97,20 @@ export default function OnyxAnalysisModal() {
               </form>
 
               {/* Typewriter Response Container */}
-              {(response || isLoading) && (
-                <div className="bg-void/80 border border-axim-teal/30 rounded p-4 font-mono text-xs text-axim-teal min-h-[60px] whitespace-pre-wrap">
-                  {response}
-                  {isLoading && !response && <span className="animate-pulse">Analyzing trace data...</span>}
-                  <span className="animate-pulse ml-1 inline-block w-1 h-3 bg-axim-teal"></span>
+              {(response || isLoading || error) && (
+                <div className={`bg-void/80 border rounded p-4 font-mono text-xs min-h-[60px] whitespace-pre-wrap ${error ? 'border-axim-alert/50 text-axim-alert' : isLoading && !response ? 'border-axim-teal/60 border-dashed animate-pulse text-axim-teal' : 'border-axim-teal/30 text-axim-teal'}`}>
+                  {error ? (
+                    <div>
+                      {error}
+                      <button onClick={() => setQuery(query || "Retry")} className="ml-2 underline text-white hover:text-gray-300">Retry Query</button>
+                    </div>
+                  ) : (
+                    <>
+                      {response}
+                      {isLoading && !response && <span>Analyzing trace data...</span>}
+                      {isLoading && <span className="animate-pulse ml-1 inline-block w-1 h-3 bg-axim-teal"></span>}
+                    </>
+                  )}
                 </div>
               )}
             </div>

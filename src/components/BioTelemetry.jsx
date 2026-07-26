@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCommodoreStore } from '../store/useCommodoreStore';
 import SafeIcon from '../common/SafeIcon';
 import { motion } from 'framer-motion';
@@ -8,6 +8,7 @@ export default function BioTelemetry() {
   const vehicle = activeVehicles[selectedVehicleId];
   const driver = drivers.find(d => d.id === vehicle?.driver_id || d.assigned_vehicle === vehicle?.id);
   const vitals = driver ? operatorVitals[driver.id] : null;
+  useEffect(() => { const supabaseUrl = import.meta.env.VITE_SUPABASE_URL; const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY; if (!supabaseUrl || !supabaseKey) return; let client; let channel; import('@supabase/supabase-js').then(({ createClient }) => { client = createClient(supabaseUrl, supabaseKey); channel = client.channel('bio-telemetry-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'telemetry_stream' }, (payload) => { if (payload.new && payload.new.driver_id) { useCommodoreStore.setState(state => { const data = payload.new.data || payload.new; const currentVitals = state.operatorVitals[payload.new.driver_id]; if (currentVitals) { return { operatorVitals: { ...state.operatorVitals, [payload.new.driver_id]: { ...currentVitals, bpm: data.bpm !== undefined ? data.bpm : currentVitals.bpm, stress: data.stress !== undefined ? data.stress : currentVitals.stress, fatigue: data.fatigue !== undefined ? data.fatigue : currentVitals.fatigue } } }; } return state; }); } }).subscribe(); }); return () => { if (client && channel) client.removeChannel(channel); }; }, []);
 
   if (!vitals) return (
     <div className="h-full flex items-center justify-center bg-axim-panel border border-axim-border rounded-lg text-gray-600 text-[10px] font-mono uppercase">

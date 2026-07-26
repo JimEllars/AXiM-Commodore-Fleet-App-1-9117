@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCommodoreStore } from '../store/useCommodoreStore';
 import SafeIcon from '../common/SafeIcon';
 import { motion } from 'framer-motion';
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 export default function DiagnosticSwarm() {
   const { diagnostics, selectedVehicleId } = useCommodoreStore();
   const vehicleStats = diagnostics.filter(d => d.vehicle_id === selectedVehicleId);
+  useEffect(() => { const supabaseUrl = import.meta.env.VITE_SUPABASE_URL; const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY; if (!supabaseUrl || !supabaseKey) return; let client; let channel; import('@supabase/supabase-js').then(({ createClient }) => { client = createClient(supabaseUrl, supabaseKey); channel = client.channel('diag-telemetry-realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'telemetry_stream' }, (payload) => { if (payload.new && payload.new.vehicle_id && payload.new.event_type === 'DIAGNOSTIC_UPDATE') { useCommodoreStore.setState(state => { const data = payload.new.data || payload.new; const existingIndex = state.diagnostics.findIndex(d => d.vehicle_id === payload.new.vehicle_id && d.component === data.component); if (existingIndex > -1) { const newDiags = [...state.diagnostics]; newDiags[existingIndex] = { ...newDiags[existingIndex], health_score: data.health_score !== undefined ? data.health_score : newDiags[existingIndex].health_score }; return { diagnostics: newDiags }; } return state; }); } }).subscribe(); }); return () => { if (client && channel) client.removeChannel(channel); }; }, []);
 
   const getStatusColor = (score) => {
     if (score > 85) return 'text-axim-success';
