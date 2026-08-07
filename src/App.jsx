@@ -26,8 +26,16 @@ import { useCommodoreStore } from './store/useCommodoreStore';
 import SafeIcon from './common/SafeIcon';
 
 function App() {
-  const { init, isLoading, activeTab, setActiveTab, simulateVitals } = useCommodoreStore();
+  const { init, isLoading, activeTab, setActiveTab, simulateVitals, currentUser } = useCommodoreStore();
   const [showAssetDrawer, setShowAssetDrawer] = useState(false);
+  const [showRoleToast, setShowRoleToast] = useState(true);
+
+  useEffect(() => {
+    if (!isLoading && showRoleToast) {
+      const timer = setTimeout(() => setShowRoleToast(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, showRoleToast]);
 
   useEffect(() => {
     init();
@@ -52,6 +60,21 @@ function App() {
 
   return (
     <div className="min-h-screen bg-void text-gray-200 p-4 font-sans flex flex-col overflow-hidden">
+
+      {showRoleToast && currentUser && (
+        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
+          <div className="bg-axim-panel border border-axim-teal rounded-lg shadow-[0_0_15px_rgba(45,212,191,0.2)] p-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-axim-teal/20 flex items-center justify-center text-axim-teal">
+              <SafeIcon name="Shield" className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 font-mono uppercase tracking-wider">Active Clearance</div>
+              <div className="text-sm font-bold text-white tracking-widest">{currentUser.role}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <OnyxAnalysisModal />
       
       <header className="flex items-center justify-between mb-4 pb-4 border-b border-axim-border shrink-0">
@@ -148,19 +171,32 @@ function App() {
             )}
 
             {activeTab === 'analytics' && (
-              <div className="h-full flex flex-col gap-4 overflow-y-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[500px] shrink-0">
-                  <div className="lg:col-span-3">
-                    <FleetAnalytics />
+              currentUser?.role === 'DISPATCHER' ? (
+                <div className="h-full flex flex-col items-center justify-center bg-axim-panel border border-axim-border rounded-lg">
+                  <div className="w-16 h-16 rounded-full border border-axim-alert flex items-center justify-center text-axim-alert mb-4">
+                    <SafeIcon name="ShieldAlert" className="w-8 h-8" />
                   </div>
-                  <ProfitabilityHUD />
+                  <h2 className="text-xl font-bold text-white mb-2">Access Restricted</h2>
+                  <p className="text-gray-400 font-mono text-sm uppercase tracking-widest text-center">
+                    Commander Clearance Required<br/>
+                    Contact your System Administrator
+                  </p>
                 </div>
-                <div className="grid grid-cols-3 gap-4 h-64 shrink-0">
-                  <div className="col-span-1"><FinancialLedger /></div>
-                  <div className="col-span-1"><InventoryManager /></div>
-                  <div className="col-span-1"><Leaderboard /></div>
+              ) : (
+                <div className="h-full flex flex-col gap-4 overflow-y-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[500px] shrink-0">
+                    <div className="lg:col-span-3">
+                      <FleetAnalytics />
+                    </div>
+                    <ProfitabilityHUD />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 h-64 shrink-0">
+                    <div className="col-span-1"><FinancialLedger /></div>
+                    <div className="col-span-1"><InventoryManager /></div>
+                    <div className="col-span-1"><Leaderboard /></div>
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
 

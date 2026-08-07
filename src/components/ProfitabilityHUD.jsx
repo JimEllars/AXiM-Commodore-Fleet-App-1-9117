@@ -6,7 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 
 const fetcher = url => fetch(url, { headers: { 'Cache-Control': 'max-age=60, stale-while-revalidate=120' } }).then(res => res.json());
 export default function ProfitabilityHUD() {
-  const { activeVehicles, fleetCosts } = useCommodoreStore();
+  const { activeVehicles, fleetCosts, currentUser } = useCommodoreStore();
   const { data: finOpsData } = useSWR('/api/finops/burn-rate', fetcher, { fallbackData: { avgMargin: '24.2%', dailyBurn: '$4,120' } });
   
   const profitData = Object.values(activeVehicles).map(v => {
@@ -57,6 +57,12 @@ export default function ProfitabilityHUD() {
           <SafeIcon name="TrendingUp" className="w-4 h-4" />
           <span>Profitability Topology</span>
         </div>
+        {currentUser?.role !== 'COMMANDER' && (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 text-[9px]">
+            <SafeIcon name="Lock" className="w-3 h-3" />
+            <span>READ ONLY</span>
+          </div>
+        )}
       </div>
       <div className="flex-1 p-4">
         <ReactECharts option={option} style={{ height: '100%' }} />
