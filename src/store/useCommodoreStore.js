@@ -47,7 +47,25 @@ export const useCommodoreStore = create((set, get) => ({
     pending_tasks: 0
   },
 
+  currentUser: { role: 'DISPATCHER', email: '', isAuthenticated: true },
+
+  initSession: () => {
+    // Try to get role from Cloudflare headers (mocked via env for now)
+    const role = import.meta.env.VITE_SIMULATE_ROLE || 'DISPATCHER';
+    const validRoles = ['COMMANDER', 'DISPATCHER', 'ANALYST'];
+    const finalRole = validRoles.includes(role) ? role : 'DISPATCHER';
+
+    set({
+      currentUser: {
+        role: finalRole,
+        email: 'user@axim.com',
+        isAuthenticated: true
+      }
+    });
+  },
+
   init: async () => {
+    get().initSession();
     set({ isLoading: true });
     try {
       await Promise.all([

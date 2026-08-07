@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OptimizerImpactView from './OptimizerImpactView';
 
 export default function AdaptiveRouteController() {
-  const { selectedVehicleId, manifests, triggerAdaptiveOptimization, isOptimizing, activeOptimization } = useCommodoreStore();
+  const { selectedVehicleId, manifests, triggerAdaptiveOptimization, isOptimizing, activeOptimization, currentUser } = useCommodoreStore();
   const [strategy, setStrategy] = useState('TIME');
   
   const manifest = manifests[selectedVehicleId];
@@ -42,8 +42,14 @@ export default function AdaptiveRouteController() {
             </p>
             <button 
               onClick={() => triggerAdaptiveOptimization(strategy)}
-              className="px-6 py-2 bg-void border border-axim-teal text-axim-teal text-[10px] font-bold rounded hover:bg-axim-teal hover:text-void transition-all uppercase tracking-widest"
+              disabled={currentUser?.role !== 'COMMANDER'}
+              className={`px-6 py-2 bg-void border text-[10px] font-bold rounded uppercase tracking-widest transition-all flex items-center gap-2 ${
+                currentUser?.role === 'COMMANDER'
+                  ? 'border-axim-teal text-axim-teal hover:bg-axim-teal hover:text-void'
+                  : 'border-gray-600 text-gray-500 cursor-not-allowed opacity-60'
+              }`}
             >
+              {currentUser?.role !== 'COMMANDER' && <SafeIcon name="Lock" className="w-3 h-3" />}
               Run Adaptive Scan
             </button>
           </div>
