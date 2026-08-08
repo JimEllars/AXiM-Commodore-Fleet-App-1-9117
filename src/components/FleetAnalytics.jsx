@@ -15,7 +15,7 @@ export default function FleetAnalytics() {
 
   const fuelOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', confine: true },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: {
       type: 'category',

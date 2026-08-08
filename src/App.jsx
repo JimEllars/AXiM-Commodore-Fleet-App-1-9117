@@ -170,10 +170,10 @@ function App() {
         <div className="flex h-full gap-4">
           <div className="flex-1 min-w-0 overflow-hidden">
             {activeTab === 'fleet' && (
-              <div className="h-full flex flex-col gap-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 h-[45%] gap-4 shrink-0">
-                  <MapPanel />
-                  <ManifestMonitor />
+              <div className="h-full flex flex-col gap-4 overflow-y-auto lg:overflow-hidden pr-2 lg:pr-0">
+                <div className="grid grid-cols-1 md:grid-cols-12 h-auto lg:h-[45%] gap-4 shrink-0">
+                  <div className="md:col-span-12 lg:col-span-8 h-[300px] lg:h-full"><MapPanel /></div>
+                  <div className="md:col-span-12 lg:col-span-4 h-[300px] lg:h-full"><ManifestMonitor /></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 h-[25%] gap-4 shrink-0">
                   <GeofenceAlerts />
@@ -243,7 +243,12 @@ function App() {
           </div>
 
           {showAssetDrawer && (
-            <aside className="w-80 shrink-0 hidden xl:block">
+            <aside className="absolute inset-y-0 right-0 z-50 w-full md:relative md:w-[400px] md:block shrink-0 bg-void/90 md:bg-transparent backdrop-blur-md md:backdrop-blur-none border-l border-axim-border md:border-none">
+              <div className="md:hidden flex justify-end p-2 border-b border-axim-border bg-void">
+                <button onClick={() => setShowAssetDrawer(false)} className="p-2 text-gray-400 hover:text-white">
+                  <SafeIcon name="X" className="w-6 h-6" />
+                </button>
+              </div>
               <AssetProfile />
             </aside>
           )}

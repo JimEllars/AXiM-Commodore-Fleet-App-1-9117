@@ -11,7 +11,7 @@ export default function AssetProfile() {
   if (!vehicle) return null;
 
   return (
-    <div className="h-full flex flex-col bg-axim-panel border border-axim-border rounded-lg overflow-hidden font-mono">
+    <div className="h-full w-full flex flex-col bg-axim-panel border border-axim-border rounded-lg overflow-hidden font-mono">
       <div className="p-4 bg-axim-teal/5 border-b border-axim-border flex justify-between items-start">
         <div>
           <h2 className="text-lg font-bold text-white leading-tight">{vehicle.name}</h2>
