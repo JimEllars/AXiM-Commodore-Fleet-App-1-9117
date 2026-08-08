@@ -25,7 +25,7 @@ export default function ProfitabilityHUD() {
 
   const option = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true },
     grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
     xAxis: {
       type: 'value',
@@ -64,7 +64,7 @@ export default function ProfitabilityHUD() {
           </div>
         )}
       </div>
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 min-h-[300px]">
         <ReactECharts option={option} style={{ height: '100%' }} />
       </div>
       <div className="p-3 bg-void/50 border-t border-axim-border grid grid-cols-2 gap-2">

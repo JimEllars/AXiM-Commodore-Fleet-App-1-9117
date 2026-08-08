@@ -23,7 +23,7 @@ export default function AdaptiveRouteController() {
             <button
               key={s}
               onClick={() => setStrategy(s)}
-              className={`px-2 py-0.5 rounded text-[8px] border transition-all ${strategy === s ? 'bg-axim-teal border-axim-teal text-void font-bold' : 'bg-void border-axim-border text-gray-500 hover:text-white'}`}
+              className={`min-h-[44px] min-w-[44px] px-4 py-2 rounded text-[10px] border transition-all active:scale-95 focus:ring-2 focus:ring-axim-teal/50 ${strategy === s ? 'bg-axim-teal border-axim-teal text-void font-bold' : 'bg-void border-axim-border text-gray-500 hover:text-white'}`}
             >
               {s}
             </button>
@@ -43,7 +43,7 @@ export default function AdaptiveRouteController() {
             <button 
               onClick={() => triggerAdaptiveOptimization(strategy)}
               disabled={currentUser?.role !== 'COMMANDER'}
-              className={`px-6 py-2 bg-void border text-[10px] font-bold rounded uppercase tracking-widest transition-all flex items-center gap-2 ${
+              className={`min-h-[44px] px-6 py-2 bg-void border text-[10px] font-bold rounded uppercase tracking-widest transition-all flex items-center gap-2 active:scale-95 focus:ring-2 focus:ring-axim-teal/50 ${
                 currentUser?.role === 'COMMANDER'
                   ? 'border-axim-teal text-axim-teal hover:bg-axim-teal hover:text-void'
                   : 'border-gray-600 text-gray-500 cursor-not-allowed opacity-60'

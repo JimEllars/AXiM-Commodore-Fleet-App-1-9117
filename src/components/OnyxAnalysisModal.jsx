@@ -36,7 +36,7 @@ export default function OnyxAnalysisModal() {
             </div>
             <button 
               onClick={() => { setOnyxTrace(null); setResponse(''); setQuery(''); }}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white active:scale-95 focus:ring-2 focus:ring-axim-teal/50"
             >
               <SafeIcon name="X" className="w-5 h-5" />
             </button>
@@ -90,7 +90,7 @@ export default function OnyxAnalysisModal() {
                 <button
                   type="submit"
                   disabled={isLoading || !query.trim()}
-                  className="bg-axim-teal text-void px-4 py-2 rounded text-sm font-bold disabled:opacity-50 hover:bg-white transition-colors"
+                  className="min-h-[44px] bg-axim-teal text-void px-4 py-2 rounded text-sm font-bold disabled:opacity-50 hover:bg-white transition-colors active:scale-95 focus:ring-2 focus:ring-white/50"
                 >
                   {isLoading ? 'Querying...' : 'Ask'}
                 </button>
@@ -119,11 +119,11 @@ export default function OnyxAnalysisModal() {
           <div className="p-4 bg-void/80 border-t border-axim-border flex justify-end gap-3 shrink-0">
             <button 
               onClick={() => { setOnyxTrace(null); setResponse(''); setQuery(''); }}
-              className="px-4 py-2 text-xs font-mono text-gray-400 hover:text-white"
+              className="min-h-[44px] px-4 py-2 text-xs font-mono text-gray-400 hover:text-white active:scale-95 focus:ring-2 focus:ring-gray-400/50 rounded"
             >
               DISMISS
             </button>
-            <button className="px-6 py-2 bg-axim-teal text-void text-xs font-bold rounded hover:bg-white transition-colors">
+            <button className="min-h-[44px] px-6 py-2 bg-axim-teal text-void text-xs font-bold rounded hover:bg-white transition-colors active:scale-95 focus:ring-2 focus:ring-axim-teal/50">
               EXECUTE REMOTE RESET
             </button>
           </div>
