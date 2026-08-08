@@ -6,6 +6,7 @@ import { vehicleService } from './vehicleService';
  */
 export const routeOptimizerService = {
   async calculateOptimization(vehicleId, manifest, strategy = 'TIME') {
+    try {
     if (!manifest || !manifest.stops) return null;
 
     const pendingStops = manifest.stops.filter(s => s.status === 'pending');
@@ -28,6 +29,12 @@ export const routeOptimizerService = {
     };
 
     return projection;
+    } catch (error) {
+      console.error('Route Optimizer Edge fetch failed:', error);
+      // Dispatch toast via store if possible or a custom event
+      window.dispatchEvent(new CustomEvent('axim-toast', { detail: 'Onyx Route Solver currently unreachable' }));
+      return null;
+    }
   },
 
   async commitOptimization(vehicleId, manifestId, newSequence) {

@@ -35,6 +35,8 @@ export const useCommodoreStore = create((set, get) => ({
   safetyIncidents: [],
   operatorVitals: {},
   diagnostics: [],
+  connectionStatus: navigator.onLine ? 'live' : 'disconnected',
+  setConnectionStatus: (status) => set({ connectionStatus: status }),
   activeTab: 'fleet',
   isOptimizing: false,
   activeOptimization: null,
