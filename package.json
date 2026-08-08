@@ -8,7 +8,9 @@
     "build": "npm run lint && vite build",
     "lint": "eslint .",
     "lint:error": "eslint . --quiet",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist --project-name axim-commodore-fleet-app-1-9117 --branch main",
+    "deploy:cloudflare:preview": "npm run build && wrangler pages deploy dist --project-name axim-commodore-fleet-app-1-9117 --branch preview"
   },
   "dependencies": {
     "@questlabs/react-sdk": "^2.2.92",
@@ -34,6 +36,7 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "wrangler": "^4.120.0"
   }
 }
