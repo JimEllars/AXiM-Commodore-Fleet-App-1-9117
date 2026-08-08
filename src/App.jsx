@@ -1,3 +1,4 @@
+import ErrorBoundary from './common/ErrorBoundary';
 import React, { useEffect, useState } from 'react';
 import MapPanel from './components/MapPanel';
 import ManifestMonitor from './components/ManifestMonitor';
@@ -26,9 +27,31 @@ import { useCommodoreStore } from './store/useCommodoreStore';
 import SafeIcon from './common/SafeIcon';
 
 function App() {
-  const { init, isLoading, activeTab, setActiveTab, simulateVitals, currentUser } = useCommodoreStore();
+  const { init, isLoading, activeTab, setActiveTab, simulateVitals, currentUser, connectionStatus, setConnectionStatus } = useCommodoreStore();
   const [showAssetDrawer, setShowAssetDrawer] = useState(false);
   const [showRoleToast, setShowRoleToast] = useState(true);
+
+
+
+  useEffect(() => {
+    const handleToast = (e) => {
+      // Very basic implementation for the requested toast
+      alert(e.detail);
+    };
+    window.addEventListener('axim-toast', handleToast);
+    return () => window.removeEventListener('axim-toast', handleToast);
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setConnectionStatus('live');
+    const handleOffline = () => setConnectionStatus('disconnected');
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [setConnectionStatus]);
 
   useEffect(() => {
     if (!isLoading && showRoleToast) {
@@ -115,6 +138,24 @@ function App() {
             <SafeIcon name="Truck" className="w-3.5 h-3.5" />
             {showAssetDrawer ? 'HIDE UNIT PROFILE' : 'SHOW UNIT PROFILE'}
           </button>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-axim-panel border border-axim-border rounded text-[10px] font-mono">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'live' ? 'bg-axim-success animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.5)]' :
+              connectionStatus === 'reconnecting' ? 'bg-axim-warn animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
+              'bg-axim-alert shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+            }`}></div>
+            <span className={
+              connectionStatus === 'live' ? 'text-axim-success' :
+              connectionStatus === 'reconnecting' ? 'text-axim-warn' :
+              'text-axim-alert'
+            }>
+              {connectionStatus === 'live' ? 'SYSTEM LIVE' :
+               connectionStatus === 'reconnecting' ? 'RECONNECTING...' :
+               'EDGE DISCONNECTED'}
+            </span>
+          </div>
+
           <div className="flex items-center gap-4 text-sm font-mono text-gray-400">
             <SafeIcon name="Clock" className="w-4 h-4" />
             <span>{new Date().toISOString().split('T')[1].split('.')[0]} UTC</span>
@@ -125,6 +166,7 @@ function App() {
       <FleetStats />
 
       <main className="flex-1 min-h-0 overflow-hidden relative">
+        <ErrorBoundary>
         <div className="flex h-full gap-4">
           <div className="flex-1 min-w-0 overflow-hidden">
             {activeTab === 'fleet' && (
@@ -206,6 +248,7 @@ function App() {
             </aside>
           )}
         </div>
+              </ErrorBoundary>
       </main>
     </div>
   );
